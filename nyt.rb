@@ -19,7 +19,7 @@ def query_nyt_headlines(word, file)
     uri = URI("http://api.nytimes.com/svc/search/v2/articlesearch.json")
     params = {
       :fl => "web_url,headline",
-      :sort => "newest",
+      #:sort => "newest",
       :fq => "headline:(\"#{word}\")",
       :page => page,
       :"api-key" => API_KEY,
@@ -27,9 +27,11 @@ def query_nyt_headlines(word, file)
     uri.query = URI.encode_www_form(params)
     p uri
 
-    if i >= 10
-      i = 0
+    if i % 10 == 0
       sleep 1
+    elsif i > 100
+      # Stupid API only gives first 100 pages
+      break
     end
 
     res = Net::HTTP.start(uri.host, uri.port, :use_ssl => false) do |http|
@@ -61,4 +63,6 @@ def query_nyt_headlines(word, file)
   end
 end
 
-query_nyt_headlines "Can", "headlines.json"
+["Can", "How", "Does", "Did", "Could", "Will"].each do |word|
+  query_nyt_headlines word, "headlines.json"
+end
