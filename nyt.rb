@@ -8,6 +8,7 @@ API_KEY = "a844021009f05833323dc50060c06646:6:57284525"
 def query_nyt_headlines(word)
   # http://developer.nytimes.com/docs/read/article_search_api_v2
   # TODO(icco): Switch to https.
+  # NOTE: 10 Calls per second and 10,000 Calls per day
   uri = URI("http://api.nytimes.com/svc/search/v2/articlesearch.json")
   params = {
     :fl => "web_url,headline",
