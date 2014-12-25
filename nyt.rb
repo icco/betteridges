@@ -11,7 +11,11 @@ def query_nyt_headlines(word, file)
   # TODO(icco): Switch to https.
   # NOTE: 10 Calls per second and 10,000 Calls per day
   i = 0
-  (0..10).each do |page|
+  offset = 0
+  page = 0
+  hits = 0
+
+  loop do
     uri = URI("http://api.nytimes.com/svc/search/v2/articlesearch.json")
     params = {
       :fl => "web_url,headline",
@@ -23,6 +27,11 @@ def query_nyt_headlines(word, file)
     uri.query = URI.encode_www_form(params)
     p uri
 
+    if i >= 10
+      i = 0
+      sleep 1
+    end
+
     res = Net::HTTP.start(uri.host, uri.port, :use_ssl => false) do |http|
       request = Net::HTTP::Get.new uri
       response = http.request request # Net::HTTPResponse object
@@ -33,8 +42,13 @@ def query_nyt_headlines(word, file)
     end
 
     data = JSON.parse(res.body)["response"]
-    puts data["meta"]
     filtered = data["docs"].map {|entry| {url: entry["web_url"], headline: entry["headline"]["main"]} }.delete_if {|entry| !/\?$/.match(entry[:headline]) }
+
+    puts data["meta"]
+    offset = data["meta"]["offset"]
+    hits = data["meta"]["hits"]
+    page += 1
+    i += 1
 
     # So ugly.
     s = Set.new(JSON.parse(File.read(file)))
@@ -42,6 +56,8 @@ def query_nyt_headlines(word, file)
     File.open(file, "w") do |f|
       f.write(s.to_a.to_json)
     end
+
+    break if offset > hits
   end
 end
 
