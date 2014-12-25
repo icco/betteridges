@@ -63,6 +63,6 @@ def query_nyt_headlines(word, file)
   end
 end
 
-["Can", "How", "Does", "Did", "Could", "Will"].each do |word|
+["Can", "How", "Does", "Did", "Could"].each do |word|
   query_nyt_headlines word, "headlines.json"
 end
